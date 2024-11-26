@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Group {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  currency     String        @default("USD")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  expenses     Expense[]
+  participants Participant[]
+}
+
+model Participant {
+  id               String               @id @default(cuid())
+  name             String
+  groupId          String
+  group            Group                @relation(fields: [groupId], references: [id])
+  paidExpenses     Expense[]            @relation("PaidBy")
+  expensesInvolved ExpenseParticipant[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model Expense {
+  id           String               @id @default(cuid())
+  description  String
+  amount       Float
+  date         DateTime             @default(now())
+  groupId      String
+  group        Group                @relation(fields: [groupId], references: [id])
+  paidById     String
+  paidBy       Participant          @relation("PaidBy", fields: [paidById], references: [id])
+  participants ExpenseParticipant[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model ExpenseParticipant {
+  id            String      @id @default(cuid())
+  expenseId     String
+  expense       Expense     @relation(fields: [expenseId], references: [id])
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id])
+  share         Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([expenseId, participantId])
+}
