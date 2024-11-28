@@ -23,6 +23,7 @@ import ExpenseSummary from '@/components/expense-summary';
 import { Participant, Group } from "@/types"
 import { useSplits } from '@/hooks/useSplits';
 import AddExpenseDialog from '@/components/add-expense-dialog';
+import ExpenseActions from '@/components/expense-actions';
 
 interface ExpenseFormData {
   description: string;
@@ -116,6 +117,33 @@ const GroupViewPage = () => {
             No expenses yet. Add your first expense!
           </div>
         ) : (
+          // group.expenses.map(expense => (
+          //   <div
+          //     key={expense.id}
+          //     className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow"
+          //   >
+          //     <div className="flex items-center gap-3">
+          //       <div className="bg-purple-100 p-2 rounded-full">
+          //         <Receipt className="w-4 h-4 text-purple-600" />
+          //       </div>
+          //       <div>
+          //         <div className="font-medium">{expense.description}</div>
+          //         <div className="text-sm text-gray-500">
+          //           Paid by {expense.paidBy.name}
+          //         </div>
+          //       </div>
+          //     </div>
+          //     <div className="text-right">
+          //       <div className="font-medium">
+          //         {formatCurrency(expense.amount, group.currency)}
+          //       </div>
+          //       <div className="text-sm text-gray-500">
+          //         {new Date(expense.date).toLocaleDateString()}
+          //       </div>
+          //     </div>
+          //   </div>
+          // ))
+
           group.expenses.map(expense => (
             <div
               key={expense.id}
@@ -132,20 +160,74 @@ const GroupViewPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-medium">
-                  {formatCurrency(expense.amount, group.currency)}
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="font-medium">
+                    {formatCurrency(expense.amount, group.currency)}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(expense.date).toLocaleDateString()}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(expense.date).toLocaleDateString()}
-                </div>
+                <ExpenseActions
+                  expense={expense}
+                  participants={group.participants}
+                  currency={group.currency}
+                  onEdit={async (expenseId, data) => {
+                    try {
+                      const response = await axios.put(
+                        `/api/groups/${groupId}/expenses/${expenseId}`,
+                        data
+                      );
+                      setGroup(prev => prev ? {
+                        ...prev,
+                        expenses: prev.expenses.map(e =>
+                          e.id === expenseId ? response.data : e
+                        )
+                      } : null);
+                      toast({
+                        title: "Success",
+                        description: "Expense updated successfully",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to update expense",
+                        variant: "destructive",
+                      });
+                      console.error(error);
+                    }
+                  }}
+                  onDelete={async (expenseId) => {
+                    try {
+                      await axios.delete(
+                        `/api/groups/${groupId}/expenses/${expenseId}`
+                      );
+                      setGroup(prev => prev ? {
+                        ...prev,
+                        expenses: prev.expenses.filter(e => e.id !== expenseId)
+                      } : null);
+                      toast({
+                        title: "Success",
+                        description: "Expense deleted successfully",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to delete expense",
+                        variant: "destructive",
+                      });
+                      console.error(error);
+                    }
+                  }}
+                />
               </div>
             </div>
           ))
         )}
       </div>
     );
-  }, [group]);
+  }, [group, toast, groupId]);
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
