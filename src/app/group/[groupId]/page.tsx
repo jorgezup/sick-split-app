@@ -169,11 +169,15 @@ const GroupViewPage = () => {
         splitBetween: expenseForm.splitBetween
       });
 
-      setGroup(prev => prev ? {
-        ...prev,
-        expenses: [...prev.expenses, response.data]
-      } : null);
-
+      // Update group with new expense
+      setGroup(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          expenses: [...prev.expenses, response.data]
+        };
+      });
+      
       setIsAddingExpense(false);
       setExpenseForm(prev => ({
         ...prev,

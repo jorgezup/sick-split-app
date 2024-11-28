@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Wallet, 
-  ArrowRight, 
-  Download, 
+import {
+  Wallet,
+  ArrowRight,
+  Download,
   FileDown
 } from "lucide-react";
 import {
@@ -44,64 +44,90 @@ interface SettleUpDialogProps {
 }
 
 const SettleUpDialog = ({ participants, balances, currency }: SettleUpDialogProps) => {
-  // Add the calculateSettlements function within the component
-  const calculateSettlements = () => {
+  // Calculate settlements using useCallback
+  const calculateSettlements = useCallback(() => {
     const settlements: Settlement[] = [];
-    
-    // Create arrays of debtors and creditors
+
+    // Filter and map participants with non-zero balances
     const debtors = participants
       .filter(p => balances[p.id] < 0)
-      .map(p => ({ 
-        participant: p, 
+      .map(p => ({
+        participant: p,
         amount: Math.abs(balances[p.id])
       }))
       .sort((a, b) => b.amount - a.amount);
 
     const creditors = participants
       .filter(p => balances[p.id] > 0)
-      .map(p => ({ 
-        participant: p, 
+      .map(p => ({
+        participant: p,
         amount: balances[p.id]
       }))
       .sort((a, b) => b.amount - a.amount);
 
-    // Match debtors with creditors
+    // Match debtors with creditors and calculate settlements
     while (debtors.length > 0 && creditors.length > 0) {
       const debtor = debtors[0];
       const creditor = creditors[0];
-      
+
       const amount = Math.min(debtor.amount, creditor.amount);
-      
-      if (amount >= 0.01) { // Only add settlements for non-zero amounts
+
+      // Only create settlement for non-trivial amounts
+      if (amount >= 0.01) {
         settlements.push({
           from: debtor.participant,
           to: creditor.participant,
-          amount,
-          completed: false
+          amount
         });
       }
 
-      // Update amounts
+      // Update remaining amounts
       debtor.amount -= amount;
       creditor.amount -= amount;
 
-      // Remove participants with settled debts
+      // Remove settled participants
       if (debtor.amount < 0.01) debtors.shift();
       if (creditor.amount < 0.01) creditors.shift();
     }
 
     return settlements;
-  };
+  }, [participants, balances]);
 
-  const [settlements, setSettlements] = useState<Settlement[]>(calculateSettlements());
+  // Use useMemo to store and recalculate settlements when dependencies change
+  const currentSettlements = useMemo(() => calculateSettlements(), [calculateSettlements]);
 
-  const toggleSettlement = (index: number) => {
-    setSettlements(prev => prev.map((s, i) => 
-      i === index ? { ...s, completed: !s.completed } : s
-    ));
-  };
+  // Store completion status separately using a Set
+  const [completedSettlementKeys, setCompletedSettlementKeys] = useState<Set<string>>(new Set());
 
-  const exportSettlements = (format: 'csv' | 'pdf') => {
+  // Generate a unique key for each settlement
+  const getSettlementKey = useCallback((settlement: Settlement) => {
+    return `${settlement.from.id}-${settlement.to.id}-${settlement.amount.toFixed(2)}`;
+  }, []);
+
+  // Toggle settlement completion status
+  const toggleSettlement = useCallback((settlement: Settlement) => {
+    setCompletedSettlementKeys(prev => {
+      const key = getSettlementKey(settlement);
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, [getSettlementKey]);
+
+  // Combine current settlements with completion status
+  const settlements = useMemo(() => {
+    return currentSettlements.map(settlement => ({
+      ...settlement,
+      completed: completedSettlementKeys.has(getSettlementKey(settlement))
+    }));
+  }, [currentSettlements, completedSettlementKeys, getSettlementKey]);
+
+  // Export settlements to CSV
+  const exportSettlements = useCallback((format: 'csv' | 'pdf') => {
     if (format === 'csv') {
       const headers = "From,To,Amount,Status\n";
       const csvContent = settlements.reduce((acc, settlement) => {
@@ -116,8 +142,9 @@ const SettleUpDialog = ({ participants, balances, currency }: SettleUpDialogProp
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
-  };
+  }, [settlements, currency]);
 
   return (
     <Dialog>
@@ -150,7 +177,7 @@ const SettleUpDialog = ({ participants, balances, currency }: SettleUpDialogProp
             Heres the most efficient way to settle all debts
           </DialogDescription>
         </DialogHeader>
-        
+
         <ScrollArea className="max-h-[60vh] mt-4">
           {settlements.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -158,9 +185,9 @@ const SettleUpDialog = ({ participants, balances, currency }: SettleUpDialogProp
             </div>
           ) : (
             <div className="space-y-3">
-              {settlements.map((settlement, index) => (
-                <Card 
-                  key={index} 
+              {settlements.map((settlement) => (
+                <Card
+                  key={getSettlementKey(settlement)}
                   className={`p-4 transition-colors ${
                     settlement.completed ? 'bg-green-50' : ''
                   }`}
@@ -168,7 +195,7 @@ const SettleUpDialog = ({ participants, balances, currency }: SettleUpDialogProp
                   <div className="flex items-center gap-3">
                     <Checkbox
                       checked={settlement.completed}
-                      onCheckedChange={() => toggleSettlement(index)}
+                      onCheckedChange={() => toggleSettlement(settlement)}
                     />
                     <div className="flex-1 flex items-center justify-between">
                       <div className="flex items-center gap-3">
