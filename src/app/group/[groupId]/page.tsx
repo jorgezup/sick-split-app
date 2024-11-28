@@ -5,7 +5,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  PlusCircle,
   Receipt,
   Users,
   ArrowLeft,
@@ -15,15 +14,6 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import axios from 'axios';
@@ -32,6 +22,7 @@ import SettleUpDialog from '@/components/settle-up-dialog';
 import ExpenseSummary from '@/components/expense-summary';
 import { Participant, Group } from "@/types"
 import { useSplits } from '@/hooks/useSplits';
+import AddExpenseDialog from '@/components/add-expense-dialog';
 
 interface ExpenseFormData {
   description: string;
@@ -48,11 +39,10 @@ const GroupViewPage = () => {
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [showBalances, setShowBalances] = useState(true);
   const fetchingRef = useRef(false);
 
-  const [expenseForm, setExpenseForm] = useState<ExpenseFormData>({
+  const [, setExpenseForm] = useState<ExpenseFormData>({
     description: '',
     amount: '',
     paidBy: '',
@@ -157,50 +147,6 @@ const GroupViewPage = () => {
     );
   }, [group]);
 
-  // Memoize handlers to prevent unnecessary re-renders
-  const handleAddExpense = useCallback(async () => {
-    if (!group) return;
-
-    try {
-      const response = await axios.post(`/api/groups/${groupId}/expenses`, {
-        description: expenseForm.description,
-        amount: parseFloat(expenseForm.amount),
-        paidById: expenseForm.paidBy,
-        splitBetween: expenseForm.splitBetween
-      });
-
-      // Update group with new expense
-      setGroup(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          expenses: [...prev.expenses, response.data]
-        };
-      });
-      
-      setIsAddingExpense(false);
-      setExpenseForm(prev => ({
-        ...prev,
-        description: '',
-        amount: '',
-        paidBy: group.participants[0].id,
-        splitBetween: group.participants.map(p => p.id)
-      }));
-
-      toast({
-        title: "Success",
-        description: "Expense added successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add expense",
-        variant: "destructive",
-      });
-      console.error('Error adding expense:', error);
-    }
-  }, [group, groupId, expenseForm, toast]);
-
   const handleShare = async () => {
     const shareUrl = window.location.href;
     try {
@@ -272,90 +218,31 @@ const GroupViewPage = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <Sheet open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-            <SheetTrigger asChild>
-              <Button className="w-full">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Add Expense
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Add New Expense</SheetTitle>
-                <SheetDescription>
-                  Enter the expense details below
-                </SheetDescription>
-              </SheetHeader>
-              <div className="space-y-4 mt-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <Input
-                    placeholder="e.g., Dinner"
-                    value={expenseForm.description}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={expenseForm.amount}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Paid by
-                  </label>
-                  <select
-                    className="w-full h-10 rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    value={expenseForm.paidBy}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, paidBy: e.target.value })}
-                  >
-                    {group.participants.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Split between
-                  </label>
-                  <div className="space-y-2">
-                    {group.participants.map(p => (
-                      <label key={p.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={expenseForm.splitBetween.includes(p.id)}
-                          onChange={(e) => {
-                            const newSplit = e.target.checked
-                              ? [...expenseForm.splitBetween, p.id]
-                              : expenseForm.splitBetween.filter(id => id !== p.id);
-                            setExpenseForm({ ...expenseForm, splitBetween: newSplit });
-                          }}
-                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                        />
-                        {p.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <Button
-                  className="w-full mt-6"
-                  onClick={handleAddExpense}
-                  disabled={!expenseForm.description || !expenseForm.amount || expenseForm.splitBetween.length === 0}
-                >
-                  Add Expense
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <AddExpenseDialog
+            participants={group.participants}
+            currency={group.currency}
+            onAddExpense={async (data) => {
+              try {
+                const response = await axios.post(`/api/groups/${groupId}/expenses`, data);
+                setGroup(prev => prev ? {
+                  ...prev,
+                  expenses: [...prev.expenses, response.data]
+                } : null);
+
+                toast({
+                  title: "Success",
+                  description: "Expense added successfully",
+                });
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to add expense",
+                  variant: "destructive",
+                });
+                console.error('Error adding expense:', error);
+              }
+            }}
+          />
 
           <SettleUpDialog
             participants={group.participants}
