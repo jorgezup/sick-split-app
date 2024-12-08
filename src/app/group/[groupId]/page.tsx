@@ -24,6 +24,7 @@ import { Participant, Group } from "@/types"
 import { useSplits } from '@/hooks/useSplits';
 import AddExpenseDialog from '@/components/add-expense-dialog';
 import ExpenseActions from '@/components/expense-actions';
+import GroupSettingsDialog from '@/components/group-settings-dialog';
 
 interface ExpenseFormData {
   description: string;
@@ -36,7 +37,7 @@ const GroupViewPage = () => {
   const router = useRouter();
   const { groupId } = useParams();
   const { toast } = useToast();
-  const { updateLastVisited } = useSplits();
+  const { updateLastVisited, addSplit } = useSplits();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,33 +118,6 @@ const GroupViewPage = () => {
             No expenses yet. Add your first expense!
           </div>
         ) : (
-          // group.expenses.map(expense => (
-          //   <div
-          //     key={expense.id}
-          //     className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow"
-          //   >
-          //     <div className="flex items-center gap-3">
-          //       <div className="bg-purple-100 p-2 rounded-full">
-          //         <Receipt className="w-4 h-4 text-purple-600" />
-          //       </div>
-          //       <div>
-          //         <div className="font-medium">{expense.description}</div>
-          //         <div className="text-sm text-gray-500">
-          //           Paid by {expense.paidBy.name}
-          //         </div>
-          //       </div>
-          //     </div>
-          //     <div className="text-right">
-          //       <div className="font-medium">
-          //         {formatCurrency(expense.amount, group.currency)}
-          //       </div>
-          //       <div className="text-sm text-gray-500">
-          //         {new Date(expense.date).toLocaleDateString()}
-          //       </div>
-          //     </div>
-          //   </div>
-          // ))
-
           group.expenses.map(expense => (
             <div
               key={expense.id}
@@ -322,6 +296,48 @@ const GroupViewPage = () => {
                   variant: "destructive",
                 });
                 console.error('Error adding expense:', error);
+              }
+            }}
+          />
+
+          <GroupSettingsDialog
+            group={group}
+            onUpdateGroup={async (data) => {
+              try {
+                const response = await axios.put(`/api/groups/${groupId}`, data);
+                setGroup(response.data);
+
+                // Update the split name in localStorage
+                addSplit({ id: groupId as string, name: data.name });
+
+                toast({
+                  title: "Success",
+                  description: "Group settings updated successfully",
+                });
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to update group settings",
+                  variant: "destructive",
+                });
+                console.error('Error updating group settings:', error)
+              }
+            }}
+            onAddParticipant={async (name) => {
+              try {
+                const response = await axios.post(`/api/groups/${groupId}`, { name });
+                setGroup(response.data);
+                toast({
+                  title: "Success",
+                  description: "Participant added successfully",
+                });
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to add participant",
+                  variant: "destructive",
+                });
+                console.error('Error adding participant:', error)
               }
             }}
           />

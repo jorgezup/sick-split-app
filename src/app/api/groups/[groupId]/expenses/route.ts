@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// export async function GET(
-//   request: Request,
-//   { params }: { params: Promise<{ slug: string }> }
-// ) {
-//   const slug = (await params).slug // 'a', 'b', or 'c'
-// }
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ groupId: string }> }
