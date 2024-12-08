@@ -25,12 +25,42 @@ import { useSplits } from '@/hooks/useSplits';
 import AddExpenseDialog from '@/components/add-expense-dialog';
 import ExpenseActions from '@/components/expense-actions';
 import GroupSettingsDialog from '@/components/group-settings-dialog';
+import type { Metadata } from "next";
+import { metadata as baseMetadata } from "../../metadata";
 
 interface ExpenseFormData {
   description: string;
   amount: string;
   paidBy: string;
   splitBetween: string[];
+}
+
+export async function generateMetadata({ params }: { params: { groupId: string } }): Promise<Metadata> {
+  try {
+    const response = await axios.get(`/api/groups/${params.groupId}`);
+    const group = response.data;
+
+    return {
+      title: `${group.name} | Sick Split`,
+      description: `Manage expenses for ${group.name}`,
+      openGraph: {
+        ...baseMetadata.openGraph,
+        title: `${group.name} - Sick Split`,
+        description: `Manage and track expenses for ${group.name}`,
+      },
+      twitter: {
+        ...baseMetadata.twitter,
+        title: `${group.name} - Sick Split`,
+        description: `Manage and track expenses for ${group.name}`,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Group | Sick Split',
+      description: 'Manage group expenses',
+    };
+  }
 }
 
 const GroupViewPage = () => {
