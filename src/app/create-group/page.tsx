@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast"
 import { useSplits } from '@/hooks/useSplits';
 import { Participant } from "@/types"
-import type { Metadata } from "next";
 
 interface CreateSplitFormData {
   name: string;
@@ -18,15 +17,6 @@ interface CreateSplitFormData {
   currency: string;
   participants: Participant[];
 }
-
-export const metadata: Metadata = {
-  title: 'Create New Split | Sick Split',
-  description: 'Create a new expense splitting group with friends and family',
-  openGraph: {
-    title: 'Create New Split - Sick Split',
-    description: 'Create a new expense splitting group with friends and family',
-  },
-};
 
 const CreateSplitPage = () => {
   const router = useRouter();
