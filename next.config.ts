@@ -1,10 +1,13 @@
-import withPWA from 'next-pwa';
+/* eslint-disable @typescript-eslint/no-require-imports */
+// import withPWA from 'next-pwa';
 
-const nextConfig = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development'
+const withPWA = require('next-pwa')({
+  dest: 'public', // Output directory for service worker
+  register: true, // Automatically register service worker
+  skipWaiting: true, // Activate service worker immediately
+  scope: '/app',
+  sw: 'service-worker.js',
+  disable: process.env.NODE_ENV === 'development', // Disable in development mode
 });
 
 if (process.env.VERCEL) {
@@ -15,4 +18,8 @@ if (process.env.VERCEL) {
   }
 }
 
-export default nextConfig;
+module.exports = withPWA({
+  reactStrictMode: true,
+}); 
+
+// export default nextConfig;

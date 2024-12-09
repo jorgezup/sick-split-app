@@ -13,14 +13,8 @@
   "categories": ["finance", "utilities", "productivity"],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
+      "src": "/icons/icon-64x64.png",
+      "sizes": "64x64",
       "type": "image/png",
       "purpose": "any"
     },
@@ -31,26 +25,8 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
+      "src": "/icons/icon-256x256.png",
+      "sizes": "256x256",
       "type": "image/png",
       "purpose": "any"
     },
@@ -61,36 +37,29 @@
       "purpose": "any"
     }
   ],
+
   "screenshots": [
     {
-      "src": "/screenshots/home-screen.png",
-      "sizes": "1280x720",
+      "src": "/screenshots/home-page.png",
+      "sizes": "397x852",
       "type": "image/png",
       "platform": "wide",
-      "label": "Home screen of SickSplit"
+      "label": "Home page of SickSplit"
     },
     {
-      "src": "/screenshots/expense-list.png",
-      "sizes": "1280x720",
+      "src": "/screenshots/create-split.png",
+      "sizes": "397x852",
       "type": "image/png",
       "platform": "wide",
-      "label": "List of expenses in a group"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Create New Split",
-      "short_name": "New Split",
-      "description": "Create a new expense splitting group",
-      "url": "/create-group",
-      "icons": [{ "src": "/icons/create-split-96x96.png", "sizes": "96x96" }]
+      "label": "Create a new split"
+    
     },
     {
-      "name": "Recent Splits",
-      "short_name": "Recent",
-      "description": "View your recent splits",
-      "url": "/",
-      "icons": [{ "src": "/icons/recent-96x96.png", "sizes": "96x96" }]
+      "src": "/screenshots/group-page.png",
+      "sizes": "397x852",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Group page with details and expenses"
     }
   ],
   "related_applications": [],
