@@ -9,12 +9,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSplits } from '@/hooks/useSplits';
+import DeleteSplitDialog from '@/components/delete-split-dialog';
+import { formatLastVisited } from '@/lib/utils';
 
 const HomePage = () => {
   const router = useRouter();
   const [inviteCode, setInviteCode] = useState('');
   const [showMySplits, setShowMySplits] = useState(false);
-  const { splits } = useSplits();
+  const { splits, removeSplit } = useSplits();
 
   const handleJoinGroup = () => {
     if (inviteCode.trim()) {
@@ -26,22 +28,6 @@ const HomePage = () => {
     if (e.key === 'Enter') {
       handleJoinGroup();
     }
-  };
-
-
-  const formatLastVisited = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const visitDate = new Date(date);
-    today.setHours(0, 0, 0, 0);
-    visitDate.setHours(0, 0, 0, 0);
-
-    // Calculate days difference
-    const days = Math.floor((today.getTime() - visitDate.getTime()) / (1000 * 60 * 60 * 24));
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
-    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -151,7 +137,13 @@ const HomePage = () => {
                                 </div>
                               </div>
                             </div>
-                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                            <div className="flex items-center gap-2">
+                              <ArrowRight className="w-4 h-4 text-gray-400" />
+                              <DeleteSplitDialog
+                                splitName={split.name}
+                                onDelete={() => removeSplit(split.id)}
+                              />
+                            </div>
                           </div>
                         </div>
                       ))}

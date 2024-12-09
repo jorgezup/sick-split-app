@@ -14,8 +14,13 @@ export const formatCurrency = (amount: number, currency: string = 'USD') => {
 
 export const formatLastVisited = (dateString: string) => {
   const date = new Date(dateString);
-  const days = Math.ceil((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-  
+  const today = new Date();
+  const visitDate = new Date(date);
+  today.setHours(0, 0, 0, 0);
+  visitDate.setHours(0, 0, 0, 0);
+
+  // Calculate days difference
+  const days = Math.floor((today.getTime() - visitDate.getTime()) / (1000 * 60 * 60 * 24));
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
   if (days < 7) return `${days} days ago`;
