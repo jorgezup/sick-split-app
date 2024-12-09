@@ -69,6 +69,23 @@ const GroupViewPage = () => {
         }));
       }
 
+      // Add the group to splits if it doesn't exist
+      const storedSplits = localStorage.getItem('splits');
+      const existingSplits = storedSplits ? JSON.parse(storedSplits) : [];
+      const splitExists = existingSplits.some((split: { id: string }) => split.id === response.data.id);
+
+      if (!splitExists) {
+        addSplit({
+          id: response.data.id,
+          name: response.data.name,
+        });
+
+        toast({
+          title: "Welcome!",
+          description: "Group added to your splits",
+        });
+      }
+
       // Update last visited
       if (response.data.id) {
         updateLastVisited(response.data.id);
@@ -84,7 +101,7 @@ const GroupViewPage = () => {
       setLoading(false);
       fetchingRef.current = false;
     }
-  }, [groupId, toast, updateLastVisited]);
+  }, [groupId, toast, updateLastVisited, addSplit]);
 
   useEffect(() => {
     fetchGroup();
