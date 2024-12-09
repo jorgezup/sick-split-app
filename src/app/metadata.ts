@@ -73,20 +73,20 @@ export const metadata: Metadata = {
   },
   
   // Viewport
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    minimumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
+  // viewport: {
+  //   width: 'device-width',
+  //   initialScale: 1,
+  //   maximumScale: 1,
+  //   minimumScale: 1,
+  //   userScalable: false,
+  //   viewportFit: 'cover',
+  // },
   
-  // Theme Color
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#000000' }
-  ],
+  // // Theme Color
+  // themeColor: [
+  //   { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  //   { media: '(prefers-color-scheme: dark)', color: '#000000' }
+  // ],
   
   // Verification
   // verification: {
