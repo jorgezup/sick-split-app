@@ -36,13 +36,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.ico' },
+      { url: '/my-favicon/favicon.ico' },
       { url: '/icon.png', type: 'image/png' }
     ],
     apple: [
-      { url: '/apple-icon.png' }
+      { url: '/my-favicon/apple-touch-icon.png' }
     ],
-    shortcut: ['/shortcut-icon.png']
+    shortcut: ['/my-favicon/apple-touch-icon.png']
   },
   
   // Open Graph

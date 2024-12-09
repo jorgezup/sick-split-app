@@ -41,18 +41,17 @@
   "screenshots": [
     {
       "src": "/screenshots/home-page.png",
-      "sizes": "397x852",
+      "sizes": "397x849",
       "type": "image/png",
       "platform": "wide",
       "label": "Home page of SickSplit"
     },
     {
       "src": "/screenshots/create-split.png",
-      "sizes": "397x852",
+      "sizes": "397x853",
       "type": "image/png",
       "platform": "wide",
       "label": "Create a new split"
-    
     },
     {
       "src": "/screenshots/group-page.png",
@@ -60,6 +59,13 @@
       "type": "image/png",
       "platform": "wide",
       "label": "Group page with details and expenses"
+    },
+    {
+      "src": "/screenshots/home-page-desktop.png",
+      "sizes": "1918x949",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Home page of SickSplit"
     }
   ],
   "related_applications": [],
