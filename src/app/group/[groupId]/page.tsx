@@ -10,7 +10,8 @@ import {
   ArrowLeft,
   Share2,
   ChevronDown,
-  Loader2
+  Loader2,
+  Copy
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -276,7 +277,35 @@ const GroupViewPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
-              <p className="text-sm text-gray-500">{group.description}</p>
+              <p className="text-sm text-gray-500 mb-1">{group.description}</p>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <span>Group ID:</span>
+                <code className="bg-gray-50 px-2 py-0.5 rounded">{group.id}</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-gray-400 hover:text-gray-600"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await navigator.clipboard.writeText(group.id);
+                      toast({
+                        title: "Success",
+                        description: "Group ID copied to clipboard",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to copy Group ID",
+                        variant: "destructive",
+                      });
+                      console.error('Error copying Group ID:', error);
+                    }
+                  }}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <Button
               variant="outline"
