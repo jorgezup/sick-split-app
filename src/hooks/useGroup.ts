@@ -31,7 +31,6 @@ export function useGroup(groupId?: string) {
   }) => {
     setLoading(true);
     try {
-      console.log('Creating group with data:', data);
       const response = await axios.post('/api/groups', data);
       return response.data;
     } catch (err) {

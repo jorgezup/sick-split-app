@@ -386,6 +386,23 @@ const GroupViewPage = () => {
                 console.error('Error adding participant:', error)
               }
             }}
+            onRemoveParticipant={async (participantId) => {
+              try {
+                const response = await axios.delete(`/api/groups/${groupId}/participants/${participantId}`);
+                setGroup(response.data);
+                toast({
+                  title: "Success",
+                  description: "Participant removed successfully",
+                });
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to remove participant",
+                  variant: "destructive",
+                });
+                console.error('Error removing participant:', error)
+              }
+            }}
           />
 
           <SettleUpDialog

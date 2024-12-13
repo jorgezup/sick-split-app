@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast"
 import { useSplits } from '@/hooks/useSplits';
 import { Participant } from "@/types"
+import { currencies } from '@/lib/currencies';
 
 interface CreateSplitFormData {
   name: string;
@@ -26,7 +27,7 @@ const CreateSplitPage = () => {
   const [formData, setFormData] = useState<CreateSplitFormData>({
     name: '',
     description: '',
-    currency: 'USD',
+    currency: currencies[0].code,
     participants: [{ id: '1', name: '', groupId: '' }]
   });
   const [shareLink, setShareLink] = useState('');
@@ -162,10 +163,11 @@ const CreateSplitPage = () => {
                   onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                   className="w-full h-10 rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="BRL">BRL - Brazilian Real</option>
+                  {currencies.map((currency) => (
+                    <option key={currency.code} value={currency.code}>
+                      {currency.code} - {currency.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

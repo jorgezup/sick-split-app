@@ -107,7 +107,7 @@ export async function PUT(
   try {
     const groupId = (await params).groupId;
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, currency } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -121,6 +121,7 @@ export async function PUT(
       data: {
         name,
         description: description || null,
+        currency: currency
       },
       include: {
         participants: true,
