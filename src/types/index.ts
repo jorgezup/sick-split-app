@@ -24,6 +24,10 @@ export interface Expense {
     share: number;
     participant: Participant;
   }>;
+  image?: {
+    url: string;
+    filename: string;
+  };
 }
 
 export interface Group {
@@ -40,4 +44,15 @@ export interface StoredSplit {
   name: string;
   createdAt: string;
   lastVisited: string;
+}
+
+export interface ExpenseFormData {
+  description: string;
+  amount: string;
+  paidBy: string;
+  splitBetween: string[];
+  image?: {
+    url: string;
+    filename: string;
+  };
 }

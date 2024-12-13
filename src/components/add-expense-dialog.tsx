@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+// src/components/add-expense-dialog.tsx
+
 import {
   Dialog,
   DialogContent,
@@ -9,8 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Users } from "lucide-react";
-import { useState } from "react";
+import { Camera, PlusCircle, Users, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { Participant } from "@/types";
 
 interface AddExpenseDialogProps {
@@ -21,18 +24,100 @@ interface AddExpenseDialogProps {
     amount: number;
     paidById: string;
     splitBetween: string[];
+    image?: {
+      url: string;
+      filename: string;
+    };
   }) => Promise<void>;
+}
+
+interface ExpenseFormState {
+  description: string;
+  amount: string;
+  paidBy: string;
+  splitBetween: string[];
+  image?: {  // Make image optional
+    url: string;
+    filename: string;
+  };
 }
 
 const AddExpenseDialog = ({ participants, currency, onAddExpense }: AddExpenseDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [expenseForm, setExpenseForm] = useState({
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [expenseForm, setExpenseForm] = useState<ExpenseFormState>({
     description: "",
     amount: "",
     paidBy: participants[0]?.id || "",
-    splitBetween: participants.map((p) => p.id),
+    splitBetween: participants.map((p) => p.id)
   });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert('File size should be less than 5MB');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload image
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: file,
+        headers: {
+          'content-type': file.type,
+        },
+      });
+
+      const { url, pathname } = await response.json();
+
+      setExpenseForm(prev => ({
+        ...prev,
+        image: {
+          url,
+          filename: pathname,
+        },
+      }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setImagePreview(null);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setExpenseForm(prev => ({
+      ...prev,
+      image: {
+        url: "",
+        filename: "",
+      }
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async () => {
     if (!expenseForm.description || !expenseForm.amount || expenseForm.splitBetween.length === 0) {
@@ -46,6 +131,7 @@ const AddExpenseDialog = ({ participants, currency, onAddExpense }: AddExpenseDi
         amount: parseFloat(expenseForm.amount),
         paidById: expenseForm.paidBy,
         splitBetween: expenseForm.splitBetween,
+        image: expenseForm.image,
       });
 
       // Reset form and close dialog
@@ -53,8 +139,9 @@ const AddExpenseDialog = ({ participants, currency, onAddExpense }: AddExpenseDi
         description: "",
         amount: "",
         paidBy: participants[0]?.id || "",
-        splitBetween: participants.map((p) => p.id),
+        splitBetween: participants.map((p) => p.id)
       });
+      setImagePreview(null);
       setOpen(false);
     } catch (error) {
       console.error("Error adding expense:", error);
@@ -154,6 +241,54 @@ const AddExpenseDialog = ({ participants, currency, onAddExpense }: AddExpenseDi
                     </div>
                   </label>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Receipt Image (optional)
+              </label>
+              <div className="mt-1 flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  {imagePreview ? 'Change Image' : 'Add Image'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                {imagePreview && (
+                  <div className="relative">
+                    {/* <Image
+                      src={imagePreview}
+                      alt="Receipt preview"
+                      width={64} // width in pixels
+                      height={64} // height in pixels
+                      className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                    /> */}
+                    <img
+                      src={imagePreview}
+                      alt="Receipt preview"
+                      className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm border"
+                      onClick={handleRemoveImage}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
